@@ -426,14 +426,14 @@ body {
   background: rgba(76, 110, 245, 0.05);
   padding: 18px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .chart-area canvas {
-  width: 100% !important;
-  height: 100% !important;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0 auto;
 }
 
 .chart-empty {
