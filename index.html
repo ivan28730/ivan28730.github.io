@@ -49,7 +49,7 @@
       <section class="panel panel--data" id="data-panel">
         <div class="panel__header">
           <h2 class="panel__title">Data &amp; Charts</h2>
-          <p class="panel__hint">Collect numbers, build quick charts, and keep everything alongside your notes.</p>
+          <p class="panel__hint">Collect numbers, build quick charts, and tweak values inline whenever inspiration strikes.</p>
         </div>
 
         <form class="form form--dataset" id="dataset-form">
@@ -73,7 +73,10 @@
               <h3 class="dataset-editor__title" id="dataset-title"></h3>
               <p class="dataset-editor__meta" id="dataset-meta"></p>
             </div>
-            <button type="button" class="dataset-editor__delete" id="dataset-delete" aria-label="Delete dataset">Delete dataset</button>
+            <div class="dataset-editor__actions">
+              <button type="button" class="dataset-editor__rename" id="dataset-rename" aria-label="Rename dataset">Rename</button>
+              <button type="button" class="dataset-editor__delete" id="dataset-delete" aria-label="Delete dataset">Delete</button>
+            </div>
           </header>
 
           <form class="form form--datapoint" id="datapoint-form">
@@ -83,6 +86,8 @@
           </form>
 
           <ul class="datapoint-list" id="datapoint-list" aria-live="polite"></ul>
+
+          <div class="dataset-summary" id="dataset-summary" hidden></div>
 
           <div class="chart-controls">
             <label class="chart-controls__label" for="chart-type-select">Chart type</label>
@@ -96,8 +101,10 @@
           </div>
 
           <div class="chart-area">
-            <p class="chart-empty" id="chart-empty">Add at least one data point to render a chart.</p>
-            <canvas id="dataset-chart" role="img" aria-label="Dataset chart visualization" hidden></canvas>
+            <div class="chart-area__inner">
+              <p class="chart-empty" id="chart-empty">Add at least one data point to render a chart.</p>
+              <canvas class="chart-area__canvas chart-area__canvas--hidden" id="dataset-chart" role="img" aria-label="Dataset chart visualization"></canvas>
+            </div>
           </div>
         </div>
       </section>
@@ -213,13 +220,20 @@
       const datasetTitle = document.getElementById('dataset-title');
       const datasetMeta = document.getElementById('dataset-meta');
       const datasetDeleteBtn = document.getElementById('dataset-delete');
+      const datasetRenameBtn = document.getElementById('dataset-rename');
       const datapointForm = document.getElementById('datapoint-form');
       const datapointLabelInput = document.getElementById('datapoint-label');
       const datapointValueInput = document.getElementById('datapoint-value');
       const datapointList = document.getElementById('datapoint-list');
+      const datasetSummary = document.getElementById('dataset-summary');
       const chartTypeSelect = document.getElementById('chart-type-select');
       const chartCanvas = document.getElementById('dataset-chart');
       const chartEmpty = document.getElementById('chart-empty');
+      const chartContainer = chartCanvas ? chartCanvas.parentElement : null;
+
+      const chartState = {
+        resizeObserver: null
+      };
 
       const aiKeyInput = document.getElementById('ai-api-key');
       const aiRememberKey = document.getElementById('ai-remember-key');
@@ -286,6 +300,9 @@
         }
         chartEmpty.textContent = message;
         chartEmpty.classList.add('chart-empty--visible');
+        if (chartCanvas) {
+          chartCanvas.classList.add('chart-area__canvas--hidden');
+        }
       }
 
       function hideChartPlaceholder() {
@@ -294,6 +311,9 @@
         }
         chartEmpty.classList.remove('chart-empty--visible');
         chartEmpty.textContent = '';
+        if (chartCanvas) {
+          chartCanvas.classList.remove('chart-area__canvas--hidden');
+        }
       }
 
       function generateId() {
@@ -505,8 +525,9 @@
           datasetEmpty.textContent = 'Create a dataset to start charting your data.';
           datasetEditor.hidden = true;
           showChartPlaceholder('Add at least one data point to render a chart.');
-          if (chartCanvas) {
-            chartCanvas.hidden = true;
+          if (datasetSummary) {
+            datasetSummary.hidden = true;
+            datasetSummary.innerHTML = '';
           }
           destroyChart();
           return;
@@ -542,8 +563,9 @@
           datasetEmpty.textContent = datasets.length
             ? 'Select a dataset to view and edit its data.'
             : 'Create a dataset to start charting your data.';
-          if (chartCanvas) {
-            chartCanvas.hidden = true;
+          if (datasetSummary) {
+            datasetSummary.hidden = true;
+            datasetSummary.innerHTML = '';
           }
           showChartPlaceholder(datasets.length
             ? 'Select a dataset to preview its chart.'
@@ -559,6 +581,7 @@
         chartTypeSelect.value = dataset.chartType;
 
         renderDataPoints(dataset);
+        renderDatasetSummary(dataset);
         buildChart(dataset);
       }
 
@@ -588,6 +611,37 @@
           value.className = 'datapoint-item__value';
           value.textContent = formatValue(point.value);
 
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'datapoint-item__edit';
+          editBtn.setAttribute('aria-label', `Edit data point ${point.label}`);
+          editBtn.textContent = '✎';
+          editBtn.addEventListener('click', () => {
+            const nextLabelRaw = window.prompt('Update label', point.label);
+            if (nextLabelRaw === null) {
+              return;
+            }
+            const nextLabel = nextLabelRaw.trim();
+            if (!nextLabel) {
+              window.alert('Label cannot be empty.');
+              return;
+            }
+
+            const nextValueRaw = window.prompt('Update value', String(point.value));
+            if (nextValueRaw === null) {
+              return;
+            }
+            const nextValue = Number.parseFloat(nextValueRaw);
+            if (!Number.isFinite(nextValue)) {
+              window.alert('Enter a valid number.');
+              return;
+            }
+
+            dataset.points[index] = { label: nextLabel, value: nextValue };
+            saveState();
+            renderDatasetEditor();
+          });
+
           const deleteBtn = document.createElement('button');
           deleteBtn.type = 'button';
           deleteBtn.className = 'datapoint-item__delete';
@@ -601,9 +655,50 @@
 
           item.appendChild(label);
           item.appendChild(value);
+          item.appendChild(editBtn);
           item.appendChild(deleteBtn);
           datapointList.appendChild(item);
         });
+      }
+
+      function renderDatasetSummary(dataset) {
+        if (!datasetSummary) {
+          return;
+        }
+
+        if (!dataset || !dataset.points.length) {
+          datasetSummary.hidden = true;
+          datasetSummary.innerHTML = '';
+          return;
+        }
+
+        const values = dataset.points.map((point) => Number(point.value)).filter((value) => Number.isFinite(value));
+        if (!values.length) {
+          datasetSummary.hidden = true;
+          datasetSummary.innerHTML = '';
+          return;
+        }
+
+        const total = values.reduce((sum, value) => sum + value, 0);
+        const average = total / values.length;
+        const minimum = Math.min(...values);
+        const maximum = Math.max(...values);
+
+        const summaryItems = [
+          { label: 'Points', value: values.length },
+          { label: 'Total', value: formatValue(total) },
+          { label: 'Average', value: formatValue(average) },
+          { label: 'Minimum', value: formatValue(minimum) },
+          { label: 'Maximum', value: formatValue(maximum) }
+        ];
+
+        datasetSummary.innerHTML = summaryItems.map((item) => `
+          <div class="dataset-summary__item">
+            <span class="dataset-summary__label">${item.label}</span>
+            <span class="dataset-summary__value">${item.value}</span>
+          </div>
+        `).join('');
+        datasetSummary.hidden = false;
       }
 
       function destroyChart() {
@@ -611,6 +706,26 @@
           chartInstance.destroy();
           chartInstance = null;
         }
+        if (chartCanvas) {
+          chartCanvas.classList.add('chart-area__canvas--hidden');
+        }
+      }
+
+      function ensureChartObserver() {
+        if (!window.ResizeObserver || !chartContainer) {
+          return;
+        }
+        if (chartState.resizeObserver) {
+          return;
+        }
+
+        chartState.resizeObserver = new ResizeObserver(() => {
+          if (chartInstance) {
+            chartInstance.resize();
+          }
+        });
+
+        chartState.resizeObserver.observe(chartContainer);
       }
 
       function buildChart(dataset) {
@@ -620,18 +735,14 @@
           return;
         }
 
+        ensureChartObserver();
+
         if (!chartIsAvailable) {
-          if (chartCanvas) {
-            chartCanvas.hidden = true;
-          }
           showChartPlaceholder('Chart preview unavailable (Chart.js failed to load).');
           return;
         }
 
         if (!dataset.points.length) {
-          if (chartCanvas) {
-            chartCanvas.hidden = true;
-          }
           showChartPlaceholder('Add at least one data point to render a chart.');
           return;
         }
@@ -640,13 +751,6 @@
         const values = dataset.points.map((point) => Number(point.value));
 
         hideChartPlaceholder();
-        chartCanvas.hidden = false;
-
-        const containerRect = chartCanvas.parentElement.getBoundingClientRect();
-        const canvasWidth = Math.max(containerRect.width, 320);
-        const canvasHeight = Math.max(containerRect.height, 240);
-        chartCanvas.width = canvasWidth;
-        chartCanvas.height = canvasHeight;
 
         const datasetConfig = {
           label: dataset.name,
@@ -669,7 +773,7 @@
         };
 
         const options = {
-          responsive: false,
+          responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { display: ['pie', 'doughnut', 'radar'].includes(dataset.chartType) },
@@ -1013,6 +1117,31 @@
 
           datasets = datasets.filter((item) => item.id !== dataset.id);
           activeDatasetId = datasets[0]?.id || null;
+          saveState();
+          renderDatasets();
+          renderDatasetEditor();
+        });
+      }
+
+      if (datasetRenameBtn) {
+        datasetRenameBtn.addEventListener('click', () => {
+          const dataset = getActiveDataset();
+          if (!dataset) {
+            window.alert('Select a dataset to rename.');
+            return;
+          }
+
+          const nextNameRaw = window.prompt('Rename dataset', dataset.name);
+          if (nextNameRaw === null) {
+            return;
+          }
+          const nextName = nextNameRaw.trim();
+          if (!nextName) {
+            window.alert('Dataset name cannot be empty.');
+            return;
+          }
+
+          dataset.name = nextName;
           saveState();
           renderDatasets();
           renderDatasetEditor();
