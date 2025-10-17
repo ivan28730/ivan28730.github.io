@@ -654,8 +654,7 @@
 
         const options = {
           responsive: true,
-          maintainAspectRatio: true,
-          aspectRatio: 1.6,
+          maintainAspectRatio: false,
           plugins: {
             legend: { display: ['pie', 'doughnut', 'radar'].includes(dataset.chartType) },
             title: { display: true, text: dataset.name },
