@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tasks & Notes</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <header class="app__header">
+      <h1 class="app__title">My Dayboard</h1>
+      <p class="app__subtitle">Capture to-dos, jot notes, and keep your ideas in one tidy place.</p>
+    </header>
+
+    <main class="app__content">
+      <section class="panel">
+        <div class="panel__header">
+          <h2 class="panel__title">To-Do List</h2>
+          <p class="panel__hint">Add tasks, check them off, keep moving.</p>
+        </div>
+
+        <form class="form" id="todo-form">
+          <input type="text" class="form__input" id="todo-input" name="todo" placeholder="Add a new task…" aria-label="Add a new task" required>
+          <button type="submit" class="form__submit">Add</button>
+        </form>
+
+        <ul class="todo-list" id="todo-list" aria-live="polite"></ul>
+      </section>
+
+      <section class="panel">
+        <div class="panel__header">
+          <h2 class="panel__title">Notes</h2>
+          <p class="panel__hint">Quick thoughts, meeting minutes, or reminders.</p>
+        </div>
+
+        <form class="form form--column" id="note-form">
+          <input type="text" class="form__input" id="note-title" name="title" placeholder="Note title" aria-label="Note title" required>
+          <textarea class="form__textarea" id="note-body" name="body" placeholder="Write your note…" aria-label="Note body" rows="4" required></textarea>
+          <button type="submit" class="form__submit">Save note</button>
+        </form>
+
+        <div class="note-grid" id="note-list" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+
+  <template id="todo-item-template">
+    <li class="todo-item">
+      <label class="todo-item__label">
+        <input type="checkbox" class="todo-item__checkbox">
+        <span class="todo-item__text"></span>
+      </label>
+      <button type="button" class="todo-item__delete" aria-label="Delete task">×</button>
+    </li>
+  </template>
+
+  <template id="note-card-template">
+    <article class="note-card">
+      <header class="note-card__header">
+        <h3 class="note-card__title"></h3>
+        <button type="button" class="note-card__delete" aria-label="Delete note">×</button>
+      </header>
+      <p class="note-card__body"></p>
+    </article>
+  </template>
+
+  <script>
+    (function () {
+      const todoForm = document.getElementById('todo-form');
+      const todoInput = document.getElementById('todo-input');
+      const todoList = document.getElementById('todo-list');
+      const todoTemplate = document.getElementById('todo-item-template');
+
+      const noteForm = document.getElementById('note-form');
+      const noteTitle = document.getElementById('note-title');
+      const noteBody = document.getElementById('note-body');
+      const noteList = document.getElementById('note-list');
+      const noteTemplate = document.getElementById('note-card-template');
+
+      const STORAGE_KEYS = {
+        todos: 'dayboard.todos',
+        notes: 'dayboard.notes'
+      };
+
+      let todos = [];
+      let notes = [];
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEYS.todos, JSON.stringify(todos));
+        localStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(notes));
+      }
+
+      function loadState() {
+        try {
+          const savedTodos = JSON.parse(localStorage.getItem(STORAGE_KEYS.todos) || '[]');
+          const savedNotes = JSON.parse(localStorage.getItem(STORAGE_KEYS.notes) || '[]');
+          todos = Array.isArray(savedTodos) ? savedTodos : [];
+          notes = Array.isArray(savedNotes) ? savedNotes : [];
+        } catch (error) {
+          todos = [];
+          notes = [];
+          console.warn('Unable to load saved data:', error);
+        }
+      }
+
+      function renderTodos() {
+        todoList.innerHTML = '';
+        if (!todos.length) {
+          const empty = document.createElement('li');
+          empty.className = 'todo-empty';
+          empty.textContent = 'No tasks yet. Add your first one above!';
+          todoList.appendChild(empty);
+          return;
+        }
+
+        todos.forEach((todo, index) => {
+          const clone = todoTemplate.content.cloneNode(true);
+          const item = clone.querySelector('.todo-item');
+          const checkbox = clone.querySelector('.todo-item__checkbox');
+          const text = clone.querySelector('.todo-item__text');
+          const deleteBtn = clone.querySelector('.todo-item__delete');
+
+          text.textContent = todo.text;
+          checkbox.checked = todo.completed;
+          if (todo.completed) {
+            item.classList.add('todo-item--completed');
+          }
+
+          checkbox.addEventListener('change', () => {
+            todos[index].completed = checkbox.checked;
+            saveState();
+            renderTodos();
+          });
+
+          deleteBtn.addEventListener('click', () => {
+            todos.splice(index, 1);
+            saveState();
+            renderTodos();
+          });
+
+          todoList.appendChild(clone);
+        });
+      }
+
+      function renderNotes() {
+        noteList.innerHTML = '';
+        if (!notes.length) {
+          const empty = document.createElement('p');
+          empty.className = 'note-empty';
+          empty.textContent = 'Notes you save will appear here.';
+          noteList.appendChild(empty);
+          return;
+        }
+
+        notes.forEach((note, index) => {
+          const clone = noteTemplate.content.cloneNode(true);
+          const card = clone.querySelector('.note-card');
+          const title = clone.querySelector('.note-card__title');
+          const body = clone.querySelector('.note-card__body');
+          const deleteBtn = clone.querySelector('.note-card__delete');
+
+          title.textContent = note.title;
+          body.textContent = note.body;
+
+          deleteBtn.addEventListener('click', () => {
+            notes.splice(index, 1);
+            saveState();
+            renderNotes();
+          });
+
+          noteList.appendChild(clone);
+        });
+      }
+
+      todoForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const text = todoInput.value.trim();
+        if (!text) {
+          todoInput.focus();
+          return;
+        }
+
+        todos.unshift({
+          text,
+          completed: false,
+          createdAt: Date.now()
+        });
+
+        todoInput.value = '';
+        saveState();
+        renderTodos();
+        todoInput.focus();
+      });
+
+      noteForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const titleValue = noteTitle.value.trim();
+        const bodyValue = noteBody.value.trim();
+        if (!titleValue || !bodyValue) {
+          return;
+        }
+
+        notes.unshift({
+          title: titleValue,
+          body: bodyValue,
+          createdAt: Date.now()
+        });
+
+        noteTitle.value = '';
+        noteBody.value = '';
+        saveState();
+        renderNotes();
+        noteTitle.focus();
+      });
+
+      loadState();
+      renderTodos();
+      renderNotes();
+    })();
+  </script>
+</body>
+</html>
