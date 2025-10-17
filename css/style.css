@@ -445,6 +445,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(248, 249, 255, 0.95);
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
 }
 
 @media (max-width: 960px) {
