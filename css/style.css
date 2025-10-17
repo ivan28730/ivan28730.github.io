@@ -449,6 +449,14 @@ body {
   border-radius: 16px;
   pointer-events: none;
   z-index: 2;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.chart-empty--visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (max-width: 960px) {

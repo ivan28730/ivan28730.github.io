@@ -280,6 +280,22 @@
       let aiKeyInMemory = '';
       let aiAbortController = null;
 
+      function showChartPlaceholder(message) {
+        if (!chartEmpty) {
+          return;
+        }
+        chartEmpty.textContent = message;
+        chartEmpty.classList.add('chart-empty--visible');
+      }
+
+      function hideChartPlaceholder() {
+        if (!chartEmpty) {
+          return;
+        }
+        chartEmpty.classList.remove('chart-empty--visible');
+        chartEmpty.textContent = '';
+      }
+
       function generateId() {
         if (window.crypto && typeof window.crypto.randomUUID === 'function') {
           return window.crypto.randomUUID();
@@ -488,10 +504,7 @@
           datasetEmpty.hidden = false;
           datasetEmpty.textContent = 'Create a dataset to start charting your data.';
           datasetEditor.hidden = true;
-          if (chartEmpty) {
-            chartEmpty.hidden = false;
-            chartEmpty.textContent = 'Add at least one data point to render a chart.';
-          }
+          showChartPlaceholder('Add at least one data point to render a chart.');
           if (chartCanvas) {
             chartCanvas.hidden = true;
           }
@@ -500,6 +513,7 @@
         }
 
         datasetEmpty.hidden = true;
+        hideChartPlaceholder();
 
         datasets.forEach((dataset) => {
           const button = document.createElement('button');
@@ -531,17 +545,15 @@
           if (chartCanvas) {
             chartCanvas.hidden = true;
           }
-          if (chartEmpty) {
-            chartEmpty.hidden = false;
-            chartEmpty.textContent = datasets.length
-              ? 'Select a dataset to preview its chart.'
-              : 'Add at least one data point to render a chart.';
-          }
+          showChartPlaceholder(datasets.length
+            ? 'Select a dataset to preview its chart.'
+            : 'Add at least one data point to render a chart.');
           destroyChart();
           return;
         }
 
         datasetEditor.hidden = false;
+        hideChartPlaceholder();
         datasetTitle.textContent = dataset.name;
         datasetMeta.textContent = buildDatasetMeta(dataset);
         chartTypeSelect.value = dataset.chartType;
@@ -609,23 +621,25 @@
         }
 
         if (!chartIsAvailable) {
-          chartCanvas.hidden = true;
-          chartEmpty.hidden = false;
-          chartEmpty.textContent = 'Chart preview unavailable (Chart.js failed to load).';
+          if (chartCanvas) {
+            chartCanvas.hidden = true;
+          }
+          showChartPlaceholder('Chart preview unavailable (Chart.js failed to load).');
           return;
         }
 
         if (!dataset.points.length) {
-          chartCanvas.hidden = true;
-          chartEmpty.hidden = false;
-          chartEmpty.textContent = 'Add at least one data point to render a chart.';
+          if (chartCanvas) {
+            chartCanvas.hidden = true;
+          }
+          showChartPlaceholder('Add at least one data point to render a chart.');
           return;
         }
 
         const labels = dataset.points.map((point) => point.label);
         const values = dataset.points.map((point) => Number(point.value));
 
-        chartEmpty.hidden = true;
+        hideChartPlaceholder();
         chartCanvas.hidden = false;
 
         const containerRect = chartCanvas.parentElement.getBoundingClientRect();
@@ -1076,8 +1090,7 @@
       loadAISettings();
 
       if (!chartIsAvailable && chartEmpty) {
-        chartEmpty.hidden = false;
-        chartEmpty.textContent = 'Chart preview unavailable (Chart.js failed to load).';
+        showChartPlaceholder('Chart preview unavailable (Chart.js failed to load).');
       }
     })();
   </script>
