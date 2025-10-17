@@ -628,6 +628,10 @@
         chartEmpty.hidden = true;
         chartCanvas.hidden = false;
 
+        const rect = chartCanvas.getBoundingClientRect();
+        chartCanvas.width = rect.width;
+        chartCanvas.height = rect.height;
+
         const datasetConfig = {
           label: dataset.name,
           data: values,
@@ -650,18 +654,20 @@
 
         const options = {
           responsive: true,
-          maintainAspectRatio: false,
+          maintainAspectRatio: true,
+          aspectRatio: 1.6,
           plugins: {
             legend: { display: ['pie', 'doughnut', 'radar'].includes(dataset.chartType) },
             title: { display: true, text: dataset.name },
             tooltip: { mode: 'index', intersect: false }
-          }
+          },
+          layout: { padding: { top: 16, right: 16, bottom: 24, left: 16 } }
         };
 
         if (dataset.chartType === 'bar' || dataset.chartType === 'line') {
           options.scales = {
-            x: { ticks: { maxRotation: 45, minRotation: 0 } },
-            y: { beginAtZero: true, ticks: { precision: 0 } }
+            x: { ticks: { maxRotation: 45, minRotation: 0 }, grid: { drawOnChartArea: false } },
+            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { drawOnChartArea: true } }
           };
         } else if (dataset.chartType === 'radar') {
           options.scales = {
