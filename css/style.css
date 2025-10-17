@@ -422,12 +422,15 @@ body {
 .chart-area {
   position: relative;
   min-height: 280px;
+  height: clamp(280px, 40vw, 360px);
   border-radius: 20px;
   background: rgba(76, 110, 245, 0.05);
   padding: 18px;
+  overflow: hidden;
 }
 
 .chart-area canvas {
+  display: block;
   width: 100% !important;
   height: 100% !important;
 }
