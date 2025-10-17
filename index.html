@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Tasks & Notes</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -45,6 +45,127 @@
 
         <div class="note-grid" id="note-list" aria-live="polite"></div>
       </section>
+
+      <section class="panel panel--data" id="data-panel">
+        <div class="panel__header">
+          <h2 class="panel__title">Data &amp; Charts</h2>
+          <p class="panel__hint">Collect numbers, build quick charts, and keep everything alongside your notes.</p>
+        </div>
+
+        <form class="form form--dataset" id="dataset-form">
+          <input type="text" class="form__input" id="dataset-name" name="dataset-name" placeholder="Dataset name (e.g. Weekly Sales)" aria-label="Dataset name" required>
+          <select class="form__select" id="dataset-chart-type" name="dataset-chart-type" aria-label="Initial chart type">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+            <option value="pie">Pie</option>
+            <option value="doughnut">Doughnut</option>
+            <option value="radar">Radar</option>
+          </select>
+          <button type="submit" class="form__submit">Create dataset</button>
+        </form>
+
+        <div class="dataset-list" id="dataset-list" aria-live="polite"></div>
+        <p class="dataset-empty" id="dataset-empty">Create a dataset to start charting your data.</p>
+
+        <div class="dataset-editor" id="dataset-editor" hidden>
+          <header class="dataset-editor__header">
+            <div>
+              <h3 class="dataset-editor__title" id="dataset-title"></h3>
+              <p class="dataset-editor__meta" id="dataset-meta"></p>
+            </div>
+            <button type="button" class="dataset-editor__delete" id="dataset-delete" aria-label="Delete dataset">Delete dataset</button>
+          </header>
+
+          <form class="form form--datapoint" id="datapoint-form">
+            <input type="text" class="form__input" id="datapoint-label" name="datapoint-label" placeholder="Label (e.g. Week 1)" aria-label="Data label" required>
+            <input type="number" class="form__input" id="datapoint-value" name="datapoint-value" placeholder="Value (e.g. 42)" aria-label="Data value" step="any" required>
+            <button type="submit" class="form__submit">Add point</button>
+          </form>
+
+          <ul class="datapoint-list" id="datapoint-list" aria-live="polite"></ul>
+
+          <div class="chart-controls">
+            <label class="chart-controls__label" for="chart-type-select">Chart type</label>
+            <select class="form__select" id="chart-type-select" aria-label="Chart type">
+              <option value="bar">Bar</option>
+              <option value="line">Line</option>
+              <option value="pie">Pie</option>
+              <option value="doughnut">Doughnut</option>
+              <option value="radar">Radar</option>
+            </select>
+          </div>
+
+          <div class="chart-area">
+            <p class="chart-empty" id="chart-empty">Add at least one data point to render a chart.</p>
+            <canvas id="dataset-chart" role="img" aria-label="Dataset chart visualization" hidden></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--ai" id="ai-panel">
+        <div class="panel__header">
+          <h2 class="panel__title">AI Assistant</h2>
+          <p class="panel__hint">Draft summaries, brainstorm ideas, or ask questions about your boards.</p>
+        </div>
+
+        <div class="ai-key">
+          <label class="ai-key__label" for="ai-api-key">OpenAI API key</label>
+          <div class="ai-key__input-row">
+            <input type="password" class="form__input ai-key__input" id="ai-api-key" name="ai-api-key" placeholder="sk-..." autocomplete="off">
+            <button type="button" class="ai-key__toggle" id="ai-toggle-key-visibility" aria-label="Toggle API key visibility">Show</button>
+          </div>
+          <label class="ai-key__remember">
+            <input type="checkbox" id="ai-remember-key">
+            <span>Save key in this browser (stores locally)</span>
+          </label>
+          <p class="ai-key__hint">Your key stays on this device. Requests go directly from your browser to OpenAI.</p>
+        </div>
+
+        <form class="form form--column ai-form" id="ai-form">
+          <label class="ai-form__label" for="ai-prompt">Ask something</label>
+          <textarea class="form__textarea ai-form__textarea" id="ai-prompt" name="ai-prompt" rows="4" placeholder="Summarize my tasks and suggest next actions…" required></textarea>
+
+          <div class="ai-form__options">
+            <label class="ai-option">
+              <input type="checkbox" id="ai-include-todos" checked>
+              <span>Include open tasks</span>
+            </label>
+            <label class="ai-option">
+              <input type="checkbox" id="ai-include-notes">
+              <span>Include recent notes</span>
+            </label>
+            <label class="ai-option">
+              <input type="checkbox" id="ai-include-dataset">
+              <span>Include active dataset</span>
+            </label>
+            <label class="ai-option ai-option--model">
+              <span>Model</span>
+              <select class="form__select ai-model-select" id="ai-model">
+                <option value="gpt-4o-mini">gpt-4o-mini</option>
+                <option value="o4-mini">o4-mini</option>
+                <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+              </select>
+            </label>
+          </div>
+
+          <button type="submit" class="form__submit ai-form__submit" id="ai-submit">Send to ChatGPT</button>
+        </form>
+
+        <div class="ai-response" id="ai-response">
+          <div class="ai-response__status" id="ai-status" hidden></div>
+          <div class="ai-response__thread" id="ai-thread" hidden>
+            <div class="ai-response__bubble ai-response__bubble--user">
+              <span class="ai-response__label">You</span>
+              <p class="ai-response__text" id="ai-user-text"></p>
+            </div>
+            <div class="ai-response__bubble ai-response__bubble--assistant">
+              <span class="ai-response__label">Assistant</span>
+              <p class="ai-response__text ai-response__text--assistant" id="ai-assistant-text"></p>
+            </div>
+          </div>
+          <p class="ai-response__placeholder" id="ai-placeholder">Responses will appear here. Ask the assistant to get started.</p>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -68,6 +189,8 @@
     </article>
   </template>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     (function () {
       const todoForm = document.getElementById('todo-form');
@@ -81,33 +204,170 @@
       const noteList = document.getElementById('note-list');
       const noteTemplate = document.getElementById('note-card-template');
 
+      const datasetForm = document.getElementById('dataset-form');
+      const datasetNameInput = document.getElementById('dataset-name');
+      const datasetChartTypeInput = document.getElementById('dataset-chart-type');
+      const datasetList = document.getElementById('dataset-list');
+      const datasetEmpty = document.getElementById('dataset-empty');
+      const datasetEditor = document.getElementById('dataset-editor');
+      const datasetTitle = document.getElementById('dataset-title');
+      const datasetMeta = document.getElementById('dataset-meta');
+      const datasetDeleteBtn = document.getElementById('dataset-delete');
+      const datapointForm = document.getElementById('datapoint-form');
+      const datapointLabelInput = document.getElementById('datapoint-label');
+      const datapointValueInput = document.getElementById('datapoint-value');
+      const datapointList = document.getElementById('datapoint-list');
+      const chartTypeSelect = document.getElementById('chart-type-select');
+      const chartCanvas = document.getElementById('dataset-chart');
+      const chartEmpty = document.getElementById('chart-empty');
+
+      const aiKeyInput = document.getElementById('ai-api-key');
+      const aiRememberKey = document.getElementById('ai-remember-key');
+      const aiToggleKeyBtn = document.getElementById('ai-toggle-key-visibility');
+      const aiForm = document.getElementById('ai-form');
+      const aiPromptInput = document.getElementById('ai-prompt');
+      const aiIncludeTodos = document.getElementById('ai-include-todos');
+      const aiIncludeNotes = document.getElementById('ai-include-notes');
+      const aiIncludeDataset = document.getElementById('ai-include-dataset');
+      const aiModelSelect = document.getElementById('ai-model');
+      const aiSubmitButton = document.getElementById('ai-submit');
+      const aiStatus = document.getElementById('ai-status');
+      const aiThread = document.getElementById('ai-thread');
+      const aiUserText = document.getElementById('ai-user-text');
+      const aiAssistantText = document.getElementById('ai-assistant-text');
+      const aiPlaceholder = document.getElementById('ai-placeholder');
+
+      const chartIsAvailable = typeof Chart === 'function';
+      const CHART_BACKGROUND = [
+        'rgba(76, 110, 245, 0.65)',
+        'rgba(132, 94, 247, 0.65)',
+        'rgba(47, 179, 68, 0.65)',
+        'rgba(247, 103, 7, 0.65)',
+        'rgba(18, 184, 134, 0.65)',
+        'rgba(240, 62, 62, 0.65)',
+        'rgba(130, 201, 30, 0.65)',
+        'rgba(21, 170, 191, 0.65)'
+      ];
+      const CHART_BORDER = [
+        '#4c6ef5',
+        '#845ef7',
+        '#2fb344',
+        '#f76707',
+        '#12b886',
+        '#f03e3e',
+        '#82c91e',
+        '#15aabf'
+      ];
+      const ALLOWED_CHART_TYPES = ['bar', 'line', 'pie', 'doughnut', 'radar'];
+      const DEFAULT_CHART_TYPE = 'bar';
+      const ALLOWED_MODELS = ['gpt-4o-mini', 'o4-mini', 'gpt-4.1-mini'];
+      const DEFAULT_MODEL = 'gpt-4o-mini';
+
       const STORAGE_KEYS = {
         todos: 'dayboard.todos',
-        notes: 'dayboard.notes'
+        notes: 'dayboard.notes',
+        datasets: 'dayboard.datasets',
+        activeDatasetId: 'dayboard.datasets.active',
+        aiKey: 'dayboard.ai.key',
+        aiModel: 'dayboard.ai.model'
       };
 
       let todos = [];
       let notes = [];
+      let datasets = [];
+      let activeDatasetId = null;
+      let chartInstance = null;
+      let aiKeyInMemory = '';
+      let aiAbortController = null;
+
+      function generateId() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+          return window.crypto.randomUUID();
+        }
+        return `dataset-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+
+      function normalizePoint(point) {
+        if (!point || typeof point.label !== 'string') {
+          return null;
+        }
+        const trimmedLabel = point.label.trim();
+        const value = Number(point.value);
+        if (!trimmedLabel || !Number.isFinite(value)) {
+          return null;
+        }
+        return { label: trimmedLabel, value };
+      }
+
+      function normalizeDataset(dataset) {
+        if (!dataset || typeof dataset !== 'object') {
+          return null;
+        }
+
+        const name = typeof dataset.name === 'string' && dataset.name.trim()
+          ? dataset.name.trim()
+          : 'Untitled dataset';
+        const id = dataset.id || generateId();
+        const chartType = ALLOWED_CHART_TYPES.includes(dataset.chartType)
+          ? dataset.chartType
+          : DEFAULT_CHART_TYPE;
+
+        const points = Array.isArray(dataset.points)
+          ? dataset.points.map(normalizePoint).filter(Boolean)
+          : [];
+
+        return {
+          id,
+          name,
+          chartType,
+          points,
+          createdAt: typeof dataset.createdAt === 'number' ? dataset.createdAt : Date.now()
+        };
+      }
 
       function saveState() {
-        localStorage.setItem(STORAGE_KEYS.todos, JSON.stringify(todos));
-        localStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(notes));
+        try {
+          localStorage.setItem(STORAGE_KEYS.todos, JSON.stringify(todos));
+          localStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(notes));
+          localStorage.setItem(STORAGE_KEYS.datasets, JSON.stringify(datasets));
+          localStorage.setItem(STORAGE_KEYS.activeDatasetId, activeDatasetId || '');
+        } catch (error) {
+          console.warn('Unable to save data:', error);
+        }
       }
 
       function loadState() {
         try {
           const savedTodos = JSON.parse(localStorage.getItem(STORAGE_KEYS.todos) || '[]');
           const savedNotes = JSON.parse(localStorage.getItem(STORAGE_KEYS.notes) || '[]');
+          const savedDatasets = JSON.parse(localStorage.getItem(STORAGE_KEYS.datasets) || '[]');
+          const storedActiveId = localStorage.getItem(STORAGE_KEYS.activeDatasetId) || '';
+
           todos = Array.isArray(savedTodos) ? savedTodos : [];
           notes = Array.isArray(savedNotes) ? savedNotes : [];
+          datasets = Array.isArray(savedDatasets)
+            ? savedDatasets.map(normalizeDataset).filter(Boolean)
+            : [];
+
+          if (datasets.some((dataset) => dataset.id === storedActiveId)) {
+            activeDatasetId = storedActiveId;
+          } else {
+            activeDatasetId = datasets[0]?.id || null;
+          }
         } catch (error) {
+          console.warn('Unable to load saved data:', error);
           todos = [];
           notes = [];
-          console.warn('Unable to load saved data:', error);
+          datasets = [];
+          activeDatasetId = null;
         }
       }
 
       function renderTodos() {
+        if (!todoList || !todoTemplate) {
+          return;
+        }
+
         todoList.innerHTML = '';
         if (!todos.length) {
           const empty = document.createElement('li');
@@ -125,7 +385,7 @@
           const deleteBtn = clone.querySelector('.todo-item__delete');
 
           text.textContent = todo.text;
-          checkbox.checked = todo.completed;
+          checkbox.checked = Boolean(todo.completed);
           if (todo.completed) {
             item.classList.add('todo-item--completed');
           }
@@ -147,6 +407,10 @@
       }
 
       function renderNotes() {
+        if (!noteList || !noteTemplate) {
+          return;
+        }
+
         noteList.innerHTML = '';
         if (!notes.length) {
           const empty = document.createElement('p');
@@ -158,7 +422,6 @@
 
         notes.forEach((note, index) => {
           const clone = noteTemplate.content.cloneNode(true);
-          const card = clone.querySelector('.note-card');
           const title = clone.querySelector('.note-card__title');
           const body = clone.querySelector('.note-card__body');
           const deleteBtn = clone.querySelector('.note-card__delete');
@@ -176,50 +439,639 @@
         });
       }
 
-      todoForm.addEventListener('submit', (event) => {
+      function getActiveDataset() {
+        return datasets.find((dataset) => dataset.id === activeDatasetId) || null;
+      }
+
+      function describeChartType(type) {
+        switch (type) {
+          case 'line':
+            return 'Line chart';
+          case 'pie':
+            return 'Pie chart';
+          case 'doughnut':
+            return 'Doughnut chart';
+          case 'radar':
+            return 'Radar chart';
+          default:
+            return 'Bar chart';
+        }
+      }
+
+      function formatValue(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) {
+          return '';
+        }
+        return Number.isInteger(number)
+          ? number.toString()
+          : number.toFixed(2).replace(/\.?0+$/, '');
+      }
+
+      function buildDatasetMeta(dataset) {
+        const count = dataset.points.length;
+        const typeLabel = describeChartType(dataset.chartType);
+        if (!count) {
+          return `No data points yet • ${typeLabel}`;
+        }
+        return `${count} ${count === 1 ? 'data point' : 'data points'} • ${typeLabel}`;
+      }
+
+      function renderDatasets() {
+        if (!datasetList) {
+          return;
+        }
+
+        datasetList.innerHTML = '';
+
+        if (!datasets.length) {
+          datasetEmpty.hidden = false;
+          datasetEmpty.textContent = 'Create a dataset to start charting your data.';
+          datasetEditor.hidden = true;
+          if (chartEmpty) {
+            chartEmpty.hidden = false;
+            chartEmpty.textContent = 'Add at least one data point to render a chart.';
+          }
+          if (chartCanvas) {
+            chartCanvas.hidden = true;
+          }
+          destroyChart();
+          return;
+        }
+
+        datasetEmpty.hidden = true;
+
+        datasets.forEach((dataset) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'dataset-pill';
+          button.textContent = dataset.name;
+          if (dataset.id === activeDatasetId) {
+            button.classList.add('dataset-pill--active');
+          }
+          button.addEventListener('click', () => {
+            selectDataset(dataset.id);
+          });
+          datasetList.appendChild(button);
+        });
+      }
+
+      function renderDatasetEditor() {
+        if (!datasetEditor) {
+          return;
+        }
+
+        const dataset = getActiveDataset();
+        if (!dataset) {
+          datasetEditor.hidden = true;
+          datasetEmpty.hidden = false;
+          datasetEmpty.textContent = datasets.length
+            ? 'Select a dataset to view and edit its data.'
+            : 'Create a dataset to start charting your data.';
+          if (chartCanvas) {
+            chartCanvas.hidden = true;
+          }
+          if (chartEmpty) {
+            chartEmpty.hidden = false;
+            chartEmpty.textContent = datasets.length
+              ? 'Select a dataset to preview its chart.'
+              : 'Add at least one data point to render a chart.';
+          }
+          destroyChart();
+          return;
+        }
+
+        datasetEditor.hidden = false;
+        datasetTitle.textContent = dataset.name;
+        datasetMeta.textContent = buildDatasetMeta(dataset);
+        chartTypeSelect.value = dataset.chartType;
+
+        renderDataPoints(dataset);
+        buildChart(dataset);
+      }
+
+      function renderDataPoints(dataset) {
+        if (!datapointList) {
+          return;
+        }
+
+        datapointList.innerHTML = '';
+        if (!dataset.points.length) {
+          const emptyItem = document.createElement('li');
+          emptyItem.className = 'datapoint-empty';
+          emptyItem.textContent = 'No data points yet. Add a label and value above.';
+          datapointList.appendChild(emptyItem);
+          return;
+        }
+
+        dataset.points.forEach((point, index) => {
+          const item = document.createElement('li');
+          item.className = 'datapoint-item';
+
+          const label = document.createElement('span');
+          label.className = 'datapoint-item__label';
+          label.textContent = point.label;
+
+          const value = document.createElement('span');
+          value.className = 'datapoint-item__value';
+          value.textContent = formatValue(point.value);
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.type = 'button';
+          deleteBtn.className = 'datapoint-item__delete';
+          deleteBtn.setAttribute('aria-label', `Delete data point ${point.label}`);
+          deleteBtn.textContent = '×';
+          deleteBtn.addEventListener('click', () => {
+            dataset.points.splice(index, 1);
+            saveState();
+            renderDatasetEditor();
+          });
+
+          item.appendChild(label);
+          item.appendChild(value);
+          item.appendChild(deleteBtn);
+          datapointList.appendChild(item);
+        });
+      }
+
+      function destroyChart() {
+        if (chartInstance) {
+          chartInstance.destroy();
+          chartInstance = null;
+        }
+      }
+
+      function buildChart(dataset) {
+        destroyChart();
+
+        if (!chartCanvas || !chartEmpty) {
+          return;
+        }
+
+        if (!chartIsAvailable) {
+          chartCanvas.hidden = true;
+          chartEmpty.hidden = false;
+          chartEmpty.textContent = 'Chart preview unavailable (Chart.js failed to load).';
+          return;
+        }
+
+        if (!dataset.points.length) {
+          chartCanvas.hidden = true;
+          chartEmpty.hidden = false;
+          chartEmpty.textContent = 'Add at least one data point to render a chart.';
+          return;
+        }
+
+        const labels = dataset.points.map((point) => point.label);
+        const values = dataset.points.map((point) => Number(point.value));
+
+        chartEmpty.hidden = true;
+        chartCanvas.hidden = false;
+
+        const datasetConfig = {
+          label: dataset.name,
+          data: values,
+          backgroundColor: (dataset.chartType === 'line' || dataset.chartType === 'radar')
+            ? CHART_BACKGROUND[0]
+            : values.map((_, index) => CHART_BACKGROUND[index % CHART_BACKGROUND.length]),
+          borderColor: (dataset.chartType === 'pie' || dataset.chartType === 'doughnut')
+            ? '#ffffff'
+            : (dataset.chartType === 'line' || dataset.chartType === 'radar')
+              ? CHART_BORDER[0]
+              : values.map((_, index) => CHART_BORDER[index % CHART_BORDER.length]),
+          borderWidth: dataset.chartType === 'line' ? 2 : 1.5,
+          tension: dataset.chartType === 'line' ? 0.35 : 0,
+          fill: dataset.chartType === 'radar',
+          pointBackgroundColor: (dataset.chartType === 'line' || dataset.chartType === 'radar')
+            ? CHART_BORDER[0]
+            : undefined,
+          hoverOffset: (dataset.chartType === 'pie' || dataset.chartType === 'doughnut') ? 12 : 4
+        };
+
+        const options = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: ['pie', 'doughnut', 'radar'].includes(dataset.chartType) },
+            title: { display: true, text: dataset.name },
+            tooltip: { mode: 'index', intersect: false }
+          }
+        };
+
+        if (dataset.chartType === 'bar' || dataset.chartType === 'line') {
+          options.scales = {
+            x: { ticks: { maxRotation: 45, minRotation: 0 } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          };
+        } else if (dataset.chartType === 'radar') {
+          options.scales = {
+            r: { beginAtZero: true, ticks: { precision: 0 } }
+          };
+        } else {
+          options.scales = {};
+        }
+
+        chartInstance = new Chart(chartCanvas, {
+          type: dataset.chartType,
+          data: {
+            labels,
+            datasets: [datasetConfig]
+          },
+          options
+        });
+      }
+
+      function selectDataset(datasetId) {
+        if (activeDatasetId === datasetId) {
+          return;
+        }
+        activeDatasetId = datasetId;
+        saveState();
+        renderDatasets();
+        renderDatasetEditor();
+      }
+
+      function getModel() {
+        if (!aiModelSelect) {
+          return DEFAULT_MODEL;
+        }
+        const selected = aiModelSelect.value;
+        return ALLOWED_MODELS.includes(selected) ? selected : DEFAULT_MODEL;
+      }
+
+      function loadAISettings() {
+        if (aiModelSelect) {
+          const storedModel = localStorage.getItem(STORAGE_KEYS.aiModel);
+          if (storedModel && ALLOWED_MODELS.includes(storedModel)) {
+            aiModelSelect.value = storedModel;
+          } else {
+            aiModelSelect.value = DEFAULT_MODEL;
+          }
+        }
+
+        if (aiKeyInput && aiRememberKey) {
+          const storedKey = localStorage.getItem(STORAGE_KEYS.aiKey) || '';
+          if (storedKey) {
+            aiKeyInput.value = storedKey;
+            aiRememberKey.checked = true;
+            aiKeyInMemory = storedKey;
+          } else {
+            aiRememberKey.checked = false;
+            aiKeyInMemory = aiKeyInput.value.trim();
+          }
+        }
+      }
+
+      function setAIStatus(message, tone = 'info') {
+        if (!aiStatus) {
+          return;
+        }
+
+        aiStatus.classList.remove('ai-response__status--error', 'ai-response__status--success');
+
+        if (!message) {
+          aiStatus.hidden = true;
+          aiStatus.textContent = '';
+          return;
+        }
+
+        aiStatus.hidden = false;
+        aiStatus.textContent = message;
+
+        if (tone === 'error') {
+          aiStatus.classList.add('ai-response__status--error');
+        } else if (tone === 'success') {
+          aiStatus.classList.add('ai-response__status--success');
+        }
+      }
+
+      function renderAIResponse(userText, assistantText, { isError = false } = {}) {
+        if (!aiThread || !aiUserText || !aiAssistantText || !aiPlaceholder) {
+          return;
+        }
+        aiPlaceholder.hidden = true;
+        aiThread.hidden = false;
+        aiUserText.textContent = userText;
+        aiAssistantText.textContent = assistantText;
+        aiAssistantText.classList.toggle('ai-response__text--error', Boolean(isError));
+      }
+
+      function buildAIContext() {
+        const chunks = [];
+
+        if (aiIncludeTodos && aiIncludeTodos.checked && todos.length) {
+          const openTodos = todos.filter((todo) => !todo.completed);
+          if (openTodos.length) {
+            const tasks = openTodos.map((todo, index) => `${index + 1}. ${todo.text}`);
+            chunks.push(`Open tasks:\n${tasks.join('\n')}`);
+          }
+        }
+
+        if (aiIncludeNotes && aiIncludeNotes.checked && notes.length) {
+          const recentNotes = notes.slice(0, 3).map((note, index) => `${index + 1}. ${note.title}: ${note.body}`);
+          chunks.push(`Recent notes:\n${recentNotes.join('\n')}`);
+        }
+
+        if (aiIncludeDataset && aiIncludeDataset.checked) {
+          const dataset = getActiveDataset();
+          if (dataset) {
+            const points = dataset.points.map((point) => `${point.label}: ${point.value}`);
+            const summary = points.length ? points.join('\n') : 'No data points recorded.';
+            chunks.push(`Dataset "${dataset.name}" (${describeChartType(dataset.chartType)}):\n${summary}`);
+          }
+        }
+
+        return chunks.join('\n\n');
+      }
+
+      async function handleAIRequest(event) {
         event.preventDefault();
-        const text = todoInput.value.trim();
-        if (!text) {
+        if (!aiPromptInput || !aiSubmitButton) {
+          return;
+        }
+
+        const prompt = aiPromptInput.value.trim();
+        if (!prompt) {
+          aiPromptInput.focus();
+          return;
+        }
+
+        const apiKey = aiKeyInput ? aiKeyInput.value.trim() : '';
+        if (!apiKey) {
+          setAIStatus('Add your OpenAI API key to use the assistant.', 'error');
+          aiKeyInput?.focus();
+          return;
+        }
+
+        aiKeyInMemory = apiKey;
+        if (aiRememberKey && aiRememberKey.checked) {
+          localStorage.setItem(STORAGE_KEYS.aiKey, apiKey);
+        } else {
+          localStorage.removeItem(STORAGE_KEYS.aiKey);
+        }
+
+        const model = getModel();
+        const context = buildAIContext();
+        let userMessage = prompt;
+        if (context) {
+          userMessage += `\n\nContext:\n${context}`;
+        }
+
+        aiAbortController = new AbortController();
+        setAIStatus('Contacting OpenAI…', 'info');
+        aiSubmitButton.disabled = true;
+        aiSubmitButton.dataset.label = aiSubmitButton.textContent;
+        aiSubmitButton.textContent = 'Sending…';
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+              model,
+              messages: [
+                {
+                  role: 'system',
+                  content: 'You are an upbeat productivity assistant. Provide clear, concise answers and actionable suggestions.'
+                },
+                { role: 'user', content: userMessage }
+              ]
+            }),
+            signal: aiAbortController.signal
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.json().catch(() => null);
+            const message = errorBody?.error?.message || response.statusText || 'Unexpected error contacting OpenAI.';
+            throw new Error(message);
+          }
+
+          const data = await response.json();
+          const assistantMessage = data?.choices?.[0]?.message?.content?.trim();
+          if (!assistantMessage) {
+            throw new Error('The assistant did not return any content.');
+          }
+
+          renderAIResponse(prompt, assistantMessage);
+          setAIStatus('Response received.', 'success');
+          window.setTimeout(() => setAIStatus('', 'info'), 3200);
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            setAIStatus('Request cancelled.', 'info');
+            return;
+          }
+          console.error('AI request failed:', error);
+          renderAIResponse(prompt, `⚠️ ${error.message}`, { isError: true });
+          setAIStatus(error.message, 'error');
+        } finally {
+          aiSubmitButton.disabled = false;
+          aiSubmitButton.textContent = aiSubmitButton.dataset.label || 'Send to ChatGPT';
+          delete aiSubmitButton.dataset.label;
+          aiAbortController = null;
+        }
+      }
+
+      if (todoForm) {
+        todoForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const text = todoInput.value.trim();
+          if (!text) {
+            todoInput.focus();
+            return;
+          }
+
+          todos.unshift({
+            text,
+            completed: false,
+            createdAt: Date.now()
+          });
+
+          todoInput.value = '';
+          saveState();
+          renderTodos();
           todoInput.focus();
-          return;
-        }
-
-        todos.unshift({
-          text,
-          completed: false,
-          createdAt: Date.now()
         });
+      }
 
-        todoInput.value = '';
-        saveState();
-        renderTodos();
-        todoInput.focus();
-      });
+      if (noteForm) {
+        noteForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const titleValue = noteTitle.value.trim();
+          const bodyValue = noteBody.value.trim();
+          if (!titleValue || !bodyValue) {
+            return;
+          }
 
-      noteForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const titleValue = noteTitle.value.trim();
-        const bodyValue = noteBody.value.trim();
-        if (!titleValue || !bodyValue) {
-          return;
-        }
+          notes.unshift({
+            title: titleValue,
+            body: bodyValue,
+            createdAt: Date.now()
+          });
 
-        notes.unshift({
-          title: titleValue,
-          body: bodyValue,
-          createdAt: Date.now()
+          noteTitle.value = '';
+          noteBody.value = '';
+          saveState();
+          renderNotes();
+          noteTitle.focus();
         });
+      }
 
-        noteTitle.value = '';
-        noteBody.value = '';
-        saveState();
-        renderNotes();
-        noteTitle.focus();
-      });
+      if (datasetForm) {
+        datasetForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const name = datasetNameInput.value.trim();
+          const type = datasetChartTypeInput.value;
+          if (!name) {
+            datasetNameInput.focus();
+            return;
+          }
+
+          const dataset = {
+            id: generateId(),
+            name,
+            chartType: ALLOWED_CHART_TYPES.includes(type) ? type : DEFAULT_CHART_TYPE,
+            points: [],
+            createdAt: Date.now()
+          };
+
+          datasets.unshift(dataset);
+          activeDatasetId = dataset.id;
+
+          datasetNameInput.value = '';
+          datasetChartTypeInput.value = DEFAULT_CHART_TYPE;
+          saveState();
+          renderDatasets();
+          renderDatasetEditor();
+          datasetNameInput.focus();
+        });
+      }
+
+      if (datapointForm) {
+        datapointForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const dataset = getActiveDataset();
+          if (!dataset) {
+            return;
+          }
+
+          const label = datapointLabelInput.value.trim();
+          const value = Number.parseFloat(datapointValueInput.value);
+          if (!label) {
+            datapointLabelInput.focus();
+            return;
+          }
+          if (!Number.isFinite(value)) {
+            datapointValueInput.focus();
+            return;
+          }
+
+          dataset.points.push({ label, value });
+
+          datapointLabelInput.value = '';
+          datapointValueInput.value = '';
+          saveState();
+          renderDatasetEditor();
+          datapointLabelInput.focus();
+        });
+      }
+
+      if (datasetDeleteBtn) {
+        datasetDeleteBtn.addEventListener('click', () => {
+          const dataset = getActiveDataset();
+          if (!dataset) {
+            return;
+          }
+
+          const shouldDelete = window.confirm(`Delete dataset "${dataset.name}"? This cannot be undone.`);
+          if (!shouldDelete) {
+            return;
+          }
+
+          datasets = datasets.filter((item) => item.id !== dataset.id);
+          activeDatasetId = datasets[0]?.id || null;
+          saveState();
+          renderDatasets();
+          renderDatasetEditor();
+        });
+      }
+
+      if (chartTypeSelect) {
+        chartTypeSelect.addEventListener('change', (event) => {
+          const dataset = getActiveDataset();
+          if (!dataset) {
+            return;
+          }
+
+          const nextType = event.target.value;
+          if (!ALLOWED_CHART_TYPES.includes(nextType)) {
+            return;
+          }
+
+          dataset.chartType = nextType;
+          datasetMeta.textContent = buildDatasetMeta(dataset);
+          saveState();
+          buildChart(dataset);
+        });
+      }
+
+      if (aiForm) {
+        aiForm.addEventListener('submit', handleAIRequest);
+      }
+
+      if (aiKeyInput) {
+        aiKeyInput.addEventListener('input', () => {
+          aiKeyInMemory = aiKeyInput.value.trim();
+          if (aiRememberKey && aiRememberKey.checked) {
+            localStorage.setItem(STORAGE_KEYS.aiKey, aiKeyInMemory);
+          }
+        });
+      }
+
+      if (aiRememberKey) {
+        aiRememberKey.addEventListener('change', () => {
+          if (aiRememberKey.checked) {
+            if (aiKeyInput && aiKeyInput.value.trim()) {
+              localStorage.setItem(STORAGE_KEYS.aiKey, aiKeyInput.value.trim());
+            }
+            setAIStatus('API key stored in this browser.', 'success');
+            window.setTimeout(() => setAIStatus('', 'info'), 2800);
+          } else {
+            localStorage.removeItem(STORAGE_KEYS.aiKey);
+            setAIStatus('API key removed from local storage.', 'info');
+            window.setTimeout(() => setAIStatus('', 'info'), 2200);
+          }
+        });
+      }
+
+      if (aiToggleKeyBtn && aiKeyInput) {
+        aiToggleKeyBtn.addEventListener('click', () => {
+          const isHidden = aiKeyInput.type === 'password';
+          aiKeyInput.type = isHidden ? 'text' : 'password';
+          aiToggleKeyBtn.textContent = isHidden ? 'Hide' : 'Show';
+        });
+      }
+
+      if (aiModelSelect) {
+        aiModelSelect.addEventListener('change', () => {
+          const model = getModel();
+          localStorage.setItem(STORAGE_KEYS.aiModel, model);
+        });
+      }
 
       loadState();
       renderTodos();
       renderNotes();
+      renderDatasets();
+      renderDatasetEditor();
+      loadAISettings();
+
+      if (!chartIsAvailable && chartEmpty) {
+        chartEmpty.hidden = false;
+        chartEmpty.textContent = 'Chart preview unavailable (Chart.js failed to load).';
+      }
     })();
   </script>
 </body>
