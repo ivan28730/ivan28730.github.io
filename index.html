@@ -628,9 +628,11 @@
         chartEmpty.hidden = true;
         chartCanvas.hidden = false;
 
-        const rect = chartCanvas.getBoundingClientRect();
-        chartCanvas.width = rect.width;
-        chartCanvas.height = rect.height;
+        const containerRect = chartCanvas.parentElement.getBoundingClientRect();
+        const canvasWidth = Math.max(containerRect.width, 320);
+        const canvasHeight = Math.max(containerRect.height, 240);
+        chartCanvas.width = canvasWidth;
+        chartCanvas.height = canvasHeight;
 
         const datasetConfig = {
           label: dataset.name,
@@ -653,7 +655,7 @@
         };
 
         const options = {
-          responsive: true,
+          responsive: false,
           maintainAspectRatio: false,
           plugins: {
             legend: { display: ['pie', 'doughnut', 'radar'].includes(dataset.chartType) },
